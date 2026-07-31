@@ -1,10 +1,10 @@
-# `/wrap`
+# `/record`
 
 Saves the session as a dated record you can find again later.
 
 ```
-/wrap
-/wrap auth rewrite        # name the topic
+/record
+/record auth rewrite        # name the topic
 ```
 
 Writes to `plans/conversations/YYYY-MM-DD-topic.md`: what was decided, what was rejected
@@ -14,10 +14,10 @@ losing the thread.
 ## Install
 
 ```bash
-cp commands/wrap/wrap* ~/.claude/commands/
+cp commands/record/record* ~/.claude/commands/
 ```
 
-Both files — `wrap.md` and `wrap.sh` — go in together and must sit beside each other.
+Both files — `record.md` and `record.sh` — go in together and must sit beside each other.
 
 ## Requirements
 
@@ -40,7 +40,7 @@ No network access, no GitHub CLI.
 
 ## Run it at checkpoints
 
-`/wrap` writes from what's in the context window. In a long session the earliest turns
+`/record` writes from what's in the context window. In a long session the earliest turns
 have been compacted and the exact wording is gone — so a record written at the very end
 is a faithful summary rather than a transcript.
 
@@ -49,12 +49,12 @@ quotation. Running it a few times as the work progresses keeps the detail.
 
 ## Boundaries
 
-`wrap.sh` is read-only and creates nothing. The command writes exactly one file. It never
+`record.sh` is read-only and creates nothing. The command writes exactly one file. It never
 commits, never pushes, and never touches the network.
 
 ## Files
 
 | File | Role |
 |------|------|
-| `wrap.md` | The command — what to write and where |
-| `wrap.sh` | Read-only probe; resolves the destination and reports it |
+| `record.md` | The command — what to write and where |
+| `record.sh` | Read-only probe; resolves the destination and reports it |

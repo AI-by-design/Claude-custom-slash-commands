@@ -5,7 +5,7 @@ Small, focused slash commands for [Claude Code](https://claude.com/claude-code).
 | Command | What it gives you | Docs |
 |---------|-------------------|------|
 | `/pulse` | Where this project is at — in progress, just shipped, open PRs, what's blocked, what's next | [commands/pulse](./commands/pulse) |
-| `/wrap` | The session saved as a dated record you can find again later | [commands/wrap](./commands/wrap) |
+| `/record` | The session saved as a dated record you can find again later | [commands/record](./commands/record) |
 
 Each command is a prompt file plus a read-only probe script. The probe gathers state,
 Claude writes the answer. No crawling the repo, no reading whole files.
@@ -43,17 +43,17 @@ bash tests/run.sh
 44 checks. No network and no GitHub auth required — `gh` is stubbed.
 
 Covers PR state rendering, probe behaviour across repo roots, subdirectories and
-worktrees, missing and failing `gh`, `/wrap` destination resolution, and a guard that no
+worktrees, missing and failing `gh`, `/record` destination resolution, and a guard that no
 absolute home path or email address ships in a published file.
 
 ## Security
 
 - **The probe scripts are read-only.** They run only `git`, `gh`, `ls`, `head`, `grep`,
   `cut` and `jq` read commands. No user input is interpolated into any command.
-- **`/wrap` writes one file** — a markdown record in your notes folder, after the probe.
+- **`/record` writes one file** — a markdown record in your notes folder, after the probe.
   It never commits and never pushes, and it warns you if that folder isn't gitignored.
 - **Nothing leaves your machine.** `/pulse` reads GitHub through your own authenticated
-  `gh`; `/wrap` doesn't touch the network.
+  `gh`; `/record` doesn't touch the network.
 - **Read the `.sh` before installing.** It auto-runs when you type the command, so treat
   it like any script you'd add to your shell.
 - **Don't run these in a repo you don't trust.** They run `git` in the current folder,

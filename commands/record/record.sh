@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Read-only probe for /wrap. Works out where a session record belongs and
+# Read-only probe for /record. Works out where a session record belongs and
 # reports it. Creates nothing, writes nothing, deletes nothing.
 set +e
 
