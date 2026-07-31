@@ -21,13 +21,15 @@ summarizes the output — no crawling the repo, no reading whole files.
 
 ```bash
 git clone https://github.com/AI-by-design/Claude-custom-slash-commands.git
-cp Claude-custom-slash-commands/commands/pulse.md Claude-custom-slash-commands/commands/pulse.sh ~/.claude/commands/
+cp Claude-custom-slash-commands/commands/pulse.* ~/.claude/commands/
 ```
 
 Then type `/pulse` in any project. That's it.
 
-> Prefer not to clone? Download `commands/pulse.md` and `commands/pulse.sh` and drop
-> both into `~/.claude/commands/`.
+> Prefer not to clone? Download `commands/pulse.md`, `commands/pulse.sh` and
+> `commands/pulse-pr.jq`, and drop all three into `~/.claude/commands/`.
+> `pulse-pr.jq` must sit beside `pulse.sh` — without it you still get your PRs,
+> just without the CI and review state.
 
 ## Requirements
 
@@ -39,13 +41,33 @@ Then type `/pulse` in any project. That's it.
 Without git/gh, `/pulse` falls back to listing recently changed files. Without jq, open
 PRs still show up — just as a plain list, without the blocked state.
 
+Nothing fails silently: if `gh` is missing, unauthenticated, or offline, the section
+reads `unavailable — <reason>` rather than going blank. A blank section would be
+indistinguishable from "no open PRs", which is a worse answer than no answer.
+
+## Tests
+
+```bash
+bash tests/run.sh
+```
+
+28 checks, no network and no GitHub auth required — `gh` is stubbed. Covers PR state
+rendering (green, failing, in progress, action-required, stale, conflicts, unknown
+mergeability, draft, legacy check shapes, current-branch ordering) and probe behaviour
+(repo root, subdirectory, linked worktree, missing `gh`, failing `gh`, nested and flat
+notes, no plans dir, no git at all).
+
 ## How it works
 
 `pulse.md` is the command. Its one inline step runs `pulse.sh`, a read-only probe
 script that gathers git state, open/merged PRs with their check and review state, and
 the open lines from recent decision notes. Claude reads that output and writes the
 summary. All the shell logic lives in `pulse.sh` so the command stays simple and
-predictable.
+predictable, and the PR-rendering rules live in `pulse-pr.jq` so they can be tested
+on their own.
+
+Repo detection uses `git rev-parse --is-inside-work-tree`, so `/pulse` works from a
+subdirectory and inside a linked worktree — not only at the repo root.
 
 Notes are never read whole. The probe greps them for status markers — `**Status:**`,
 `**Open decision:**`, unchecked `- [ ]` boxes, and status/next headings — and passes
