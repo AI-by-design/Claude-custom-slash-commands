@@ -5,8 +5,8 @@ set -uo pipefail
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
-PULSE="$REPO/commands/pulse.sh"
-FILTER="$REPO/commands/pulse-pr.jq"
+PULSE="$REPO/commands/pulse/pulse.sh"
+FILTER="$REPO/commands/pulse/pulse-pr.jq"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
@@ -178,7 +178,7 @@ contains "no git falls back to a file listing" "$out" "### recently changed"
 echo
 echo "Wrap destination resolution"
 
-WRAP="$REPO/commands/wrap.sh"
+WRAP="$REPO/commands/wrap/wrap.sh"
 
 mkrepo "$TMP/w1" >/dev/null
 mkdir -p "$TMP/w1/plans/conversations"
