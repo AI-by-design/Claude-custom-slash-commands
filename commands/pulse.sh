@@ -48,15 +48,20 @@ for f in DECISIONS.md CHANGELOG.md NOTES.md ROADMAP.md; do
   if [ -f "$f" ]; then echo "### $f (top)"; head -20 "$f"; fi
 done
 
-# Every matching dir, not just the first — repos carry more than one plans dir
+# Every matching dir, not just the first — repos carry more than one plans dir.
+# Two levels deep, so a plans dir split into conversations/ + implementation/
+# subfolders is still found.
 for d in plans* docs decisions notes; do
-  if ls "$d"/*.md >/dev/null 2>&1; then
-    echo "### recent notes in $d/ (names only)"; ls -t "$d"/*.md 2>/dev/null | head -6
+  found=$(ls -t "$d"/*.md "$d"/*/*.md 2>/dev/null)
+  if [ -n "$found" ]; then
+    echo "### recent notes in $d/ (names only)"
+    printf '%s\n' "$found" | head -6
   fi
 done
 
 # 2b. Open items inside the most recent notes — marker lines only, never whole files
-recent=$(ls -t plans*/*.md docs/*.md decisions/*.md notes/*.md 2>/dev/null | head -3)
+recent=$(ls -t plans*/*.md plans*/*/*.md docs/*.md docs/*/*.md \
+              decisions/*.md decisions/*/*.md notes/*.md notes/*/*.md 2>/dev/null | head -3)
 if [ -n "$recent" ]; then
   echo "### open items in recent notes"
   printf '%s\n' "$recent" | while IFS= read -r f; do
