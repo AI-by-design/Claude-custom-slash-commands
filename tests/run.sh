@@ -5,8 +5,8 @@ set -uo pipefail
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
-PULSE="$REPO/commands/pulse.sh"
-FILTER="$REPO/commands/pulse-pr.jq"
+PULSE="$REPO/commands/pulse/pulse.sh"
+FILTER="$REPO/commands/pulse/pulse-pr.jq"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
@@ -176,8 +176,68 @@ out=$(cd "$TMP/nogit" && PATH="$PATHW" bash "$PULSE" 2>&1)
 contains "no git falls back to a file listing" "$out" "### recently changed"
 
 echo
+echo "Wrap destination resolution"
+
+WRAP="$REPO/commands/wrap/wrap.sh"
+
+mkrepo "$TMP/w1" >/dev/null
+mkdir -p "$TMP/w1/plans/conversations"
+printf '# old\n' > "$TMP/w1/plans/conversations/2020-01-01-old.md"
+out=$(cd "$TMP/w1" && bash "$WRAP" 2>&1)
+contains "resolves a split notes dir (files two levels down)" "$out" "plans/conversations"
+contains "reports an absolute target" "$out" "$TMP/w1/plans/conversations"
+contains "warns when the target is not gitignored" "$out" "NOT IGNORED"
+contains "shows house style from the newest record" "$out" "# old"
+
+printf 'plans/\n' > "$TMP/w1/.gitignore"
+out=$(cd "$TMP/w1" && bash "$WRAP" 2>&1)
+contains "reports ignored once the rule exists" "$out" "ignored — safe"
+
+mkrepo "$TMP/w2" >/dev/null
+out=$(cd "$TMP/w2" && bash "$WRAP" 2>&1)
+contains "proposes plans/ when no notes dir exists" "$out" "plans/conversations"
+contains "says the directory would be created" "$out" "would be created"
+
+mkrepo "$TMP/w3" >/dev/null
+mkdir -p "$TMP/w3/plans" "$TMP/w3/docs"
+printf '# a\n' > "$TMP/w3/plans/a.md"
+printf '# b\n' > "$TMP/w3/docs/b.md"
+out=$(cd "$TMP/w3" && bash "$WRAP" 2>&1)
+contains "refuses to guess between two active dirs" "$out" "AMBIGUOUS"
+
+mkrepo "$TMP/w4" >/dev/null
+mkdir -p "$TMP/w4/plans/conversations"
+today=$(date +%Y-%m-%d)
+printf '# today\n' > "$TMP/w4/plans/conversations/$today-existing.md"
+out=$(cd "$TMP/w4" && bash "$WRAP" 2>&1)
+contains "lists an existing record for today" "$out" "$today-existing.md"
+contains "advises updating rather than duplicating" "$out" "update it instead"
+
+mkdir -p "$TMP/w5" && printf '# x\n' > "$TMP/w5/a.md"
+out=$(cd "$TMP/w5" && bash "$WRAP" 2>&1); rc=$?
+check "works outside a git repo" "0" "$rc"
+contains "says there is nothing to ignore outside git" "$out" "not a git repo"
+
+out=$(cd "$TMP/w1" && bash "$WRAP" 2>&1)
+check "probe writes nothing (no new files)" \
+  "1" \
+  "$(ls -1 "$TMP/w1/plans/conversations" | wc -l | tr -d ' ')"
+
+echo
+echo "Nothing machine-specific ships"
+
+# These commands run on other people's machines. A hardcoded home directory or
+# an address baked into a published file is both a privacy leak and a bug.
+leak=$(grep -rnE '/(Users|home)/[a-zA-Z0-9._-]+' "$REPO/commands" "$REPO/README.md" 2>/dev/null)
+check "no absolute home paths in shipped files" "" "$leak"
+
+mail=$(grep -rnE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' "$REPO/commands" "$REPO/README.md" 2>/dev/null)
+check "no email addresses in shipped files" "" "$mail"
+
+echo
 echo "bash -n"
 if bash -n "$PULSE"; then pass=$((pass + 1)); echo "  ok   pulse.sh parses"; else fail=$((fail + 1)); echo "  FAIL pulse.sh"; fi
+if bash -n "$WRAP"; then pass=$((pass + 1)); echo "  ok   wrap.sh parses"; else fail=$((fail + 1)); echo "  FAIL wrap.sh"; fi
 
 echo
 echo "$pass passed, $fail failed"
