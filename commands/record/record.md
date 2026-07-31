@@ -1,11 +1,11 @@
 ---
 description: Save this session as a dated record you can find again later
-allowed-tools: Bash(bash ~/.claude/commands/wrap.sh), Read, Write, Edit, Bash(mkdir:*), Bash(ls:*), Bash(wc:*), Bash(git check-ignore:*)
+allowed-tools: Bash(bash ~/.claude/commands/record.sh), Read, Write, Edit, Bash(mkdir:*), Bash(ls:*), Bash(wc:*), Bash(git check-ignore:*)
 ---
 
 Destination probe:
 
-!`bash ~/.claude/commands/wrap.sh`
+!`bash ~/.claude/commands/record.sh`
 
 Write a record of this conversation so it survives the window being closed.
 
@@ -21,7 +21,7 @@ Use the `resolved` path from the probe. Create the directory if it doesn't exist
 
 `<date from probe>-<kebab-slug>.md`, slug from the topic — `2026-01-04-auth-rewrite-decisions.md`.
 
-If the probe lists an existing record for today covering this same session, **update that file** instead of creating a second one. `/wrap` is expected to run several times in a session; each run should leave one record, not a pile of near-duplicates.
+If the probe lists an existing record for today covering this same session, **update that file** instead of creating a second one. `/record` is expected to run several times in a session; each run should leave one record, not a pile of near-duplicates.
 
 ## What to write
 
@@ -53,7 +53,7 @@ The body is a **thematic synthesis**, not a transcript:
 Two rules on accuracy:
 
 - **Don't invent.** If a detail isn't in the conversation, leave it out. A record that reads well but misremembers is worse than a short one.
-- **Say what you can't recover.** In a long session the early turns have been compacted and the exact wording is gone. Write what survives and note the gap — don't paraphrase and present it as quotation. If this matters, say so plainly at the end, and suggest running `/wrap` at checkpoints rather than only at the end.
+- **Say what you can't recover.** In a long session the early turns have been compacted and the exact wording is gone. Write what survives and note the gap — don't paraphrase and present it as quotation. If this matters, say so plainly at the end, and suggest running `/record` at checkpoints rather than only at the end.
 
 ## Then verify
 
